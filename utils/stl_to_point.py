@@ -17,25 +17,27 @@ def extract_coords(path: str) -> list:
 
     return pcd
 
+
 def read_xyz(path):
 
-    point_cloud= np.loadtxt(path,delimiter=';',skiprows=1)
-    print('here 1')
-    print('Loaded point cloud shape:', point_cloud.shape)
+    point_cloud = np.loadtxt(path, delimiter=";", skiprows=1)
+    print("here 1")
+    print("Loaded point cloud shape:", point_cloud.shape)
     pcd = o3d.geometry.PointCloud()
-    print('here 2')
-    pcd.points = o3d.utility.Vector3dVector(point_cloud[:,:3])
-    print('here 2')
+    print("here 2")
+    pcd.points = o3d.utility.Vector3dVector(point_cloud[:, :3])
+    print("here 2")
     reflectance = point_cloud[:, 4]
-    colors = np.tile(reflectance[:, None], (1, 3)) / np.max(reflectance)  
-    print('here 2')
+    colors = np.tile(reflectance[:, None], (1, 3)) / np.max(reflectance)
+    print("here 2")
     pcd.colors = o3d.utility.Vector3dVector(colors)
     return pcd
+
 
 def read_pcloud(path: str) -> o3d.geometry.PointCloud:
     file_ext = path.split(".")
     if file_ext[-1] == "pts":
-        
+
         print("file had extra tokens")
         pcd = extract_coords(path)
 
@@ -76,16 +78,23 @@ def pcloud_mesh_rollingball(pcd):  # pcd: o3d.geometry.PointCloud
     pcd.estimate_normals()
     distances = pcd.compute_nearest_neighbor_distance()
     avg_dist = np.mean(distances)
-    radius = 2 * avg_dist
+    radius = 4.5 * avg_dist
 
     mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(
-        pcd, o3d.utility.DoubleVector([radius, radius * 2])
+        pcd, o3d.utility.DoubleVector([radius, radius * 4.5])
     )
     dec_mesh = mesh.simplify_quadric_decimation(100000)
     dec_mesh.remove_degenerate_triangles()
     dec_mesh.remove_duplicated_triangles()
     dec_mesh.remove_duplicated_vertices()
     dec_mesh.remove_non_manifold_edges()
+    if pcd.has_colors():
+        vertex_colors = np.asarray(pcd.colors)
+        dec_mesh.vertex_colors = o3d.utility.Vector3dVector(vertex_colors)
+    else:
+        # Assign red color to all vertices
+        red_color = np.array([[1.0, 0.0, 0.0]] * len(dec_mesh.vertices))
+        dec_mesh.vertex_colors = o3d.utility.Vector3dVector(red_color)
     return dec_mesh
 
 
@@ -109,7 +118,7 @@ def pcloud_mesh_poission(pcd):
 file_path = "./data_samples/margin_line_ADA4.pts"
 
 pcd = read_pcloud(file_path)
-print('here 2')
-visualize_pcloud(pcd=pcd)
-mesh=pcloud_mesh_rollingball(pcd=pcd)
+print("here 2")
+# visualize_pcloud(pcd=pcd)
+mesh = pcloud_mesh_rollingball(pcd=pcd)
 visualize_mesh(mesh=mesh)
