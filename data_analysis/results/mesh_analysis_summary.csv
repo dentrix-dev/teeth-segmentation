@@ -1,0 +1,2 @@
+total_files,average_vertices,std_vertices,average_faces,std_faces,average_volume,empty_files,non_watertight,inconsistent_winding,non_manifold_files,files_with_non_manifold_edges,total_non_manifold_edges
+1300,117650.4,36294.60767,235169.628,72559.42067,76052.97111,0,1300,7,1300,0,0
